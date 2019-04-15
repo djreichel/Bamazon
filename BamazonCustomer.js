@@ -12,91 +12,118 @@
 
 // Then create a Node application called bamazonCustomer.js. - DONE
 
-// Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
-//function displayProducts()
-    // connection query to search products for item-id, name and price
+var mysql = require("mysql");
+var inquirer = require("inquirer");
 
-// The app should then prompt users with two messages.
-// INQUIRER HERE
-    // The first should ask them the ID of the product they would like to buy.
-    // The second message should ask how many units of the product they would like to buy.
+// create the connection information for the sql database
+var connection = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: "root",
+  //password: "",
+  database: "bamazon_db"
+});
 
+// var cost = 0;
+// var total = 0;
+// var totalcount = 0;
 
+// Running this application will first display all of the items available for sale. 
+// Include the ids, names, and prices of products for sale.
+function options(){
 
-// Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-//function checkStock() if userQuantity < stock_quantity
+    connection.query('SELECT * FROM products', function(err, results){
+        if (err) throw err;
+            console.log("What would you like to buy?");
 
-// If not, the app should log a phrase like Insufficient quantity!, and then prevent the order from going through.
-// console.log("Insufficient quantity!" + "There's only" + products.stock_quantity + " left");
+        for (var i = 0; i < results.length; i++) {
+            console.log("ID: " + results[i].item_id + " PRODUCT NAME: " + results[i].product_name + " DEPARTMENT: " + results[i].department_name + " PRICE: $" + results[i].price + " QUANTITY AVAILABLE: " + results[i].stock_quantity); 
+        }
 
-// However, if your store does have enough of the product, you should fulfill the customer's order.
-// function fulfillOrder
+        // The app should then prompt users with two messages.
+        // The first should ask them the ID of the product they would like to buy.
+            inquirer.prompt([{
+                type: 'input',
+                name: 'item_id',
+                message: "What is the ID of the product you would like to buy?"
 
-// This means updating the SQL database to reflect the remaining quantity.
-//function updateStock
+            }]).then(function(answer){
+                var item_id = parseInt(answer.item_id)
 
-// Once the update goes through, show the customer the total cost of their purchase.
-//function calculateCost()
+                for (var i = 0; i < results.length; i++) {
+                    if(results[i].item_id == answer.item_id){
+                        var result = results[i]; 
+                        console.log('We have ' + result.stock_quantity + ' ' + result.product_name + ' in stock for $' + result.price + ' per Item');
 
+                // The second message should ask how many units of the product they would like to buy.
+                inquirer.prompt([{
+                    type: 'input',
+                    name: 'itemQuantity',
+                    message: 'How many ' + result.product_name + ' would you like to buy?'
 
+                // Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+                }]).then(function(answer){
+                    var quantity = parseInt(answer.itemQuantity);
+                    
+                    // * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
+                    if(quantity > result.stock_quantity){
+                        console.log("Sorry we do not have enough available to fullfil your order. Please choose a lower quantity or select another item.");
 
+                    inquirer.prompt([{
+                        type: 'confirm',
+                        name: 'shop',
+                        message: "Is there anything else we can help you with?"
 
-// If this activity took you between 8-10 hours, then you've put enough time into this assignment. Feel free to stop here -- unless you want to take on the next challenge.
+                        // However, if your store _does_ have enough of the product, you should fulfill the customer's order.
+                    }]).then(function(answer){
+                        if(answer.shop){
+                            options();
+                        }else{
+                            console.log("Thank you for your purchase. We hope you love your products.")
+                                connection.end();
+                        }
+                    })
 
-// Challenge #2: Manager View (Next Level)
+                    } else {
+                        console.log("Time to pay up! You owe:" + total);
+                        // * Once the update goes through, show the customer the total cost of their purchase.
+                        // * This means updating the SQL database to reflect the remaining quantity.
+                        connection.query('UPDATE Products SET stock_quantity = stock_quantity - ? WHERE item_id = ?', [quantity, item_id], function(err, results){
+                    if (err) throw err;
+                    });
 
-// Create a new Node application called bamazonManager.js. Running this application will:
+                        var cost = result.price;
+                        var totalCost = cost * quantity;
+                        var totalCostRound = Math.round(totalCost*100)/100;
+                        var tax = ((.65 / 10000) * 1000) * totalCost;
+                        var taxRound = Math.round(tax*100)/100;
+                        var total = totalCostRound + taxRound;
+              
+                        console.log("QUANTITY ORDERED: " + quantity + " " +result.product_name + '  at ' + "$" + cost);
+                        console.log("PRICE:  $" + totalCostRound);
+                        console.log("TAX @ 0.0775%: $" + taxRound);
+                        console.log("YOUR TOTAL BALANCE IS:  $" + total);
 
-// List a set of menu options:
-// View Products for Sale
-// View Low Inventory
-// Add to Inventory
-// Add New Product
-// If a manager selects View Products for Sale, the app should list every available item: the item IDs, names, prices, and quantities.
-// If a manager selects View Low Inventory, then it should list all items with an inventory count lower than five.
-// If a manager selects Add to Inventory, your app should display a prompt that will let the manager "add more" of any item currently in the store.
-// If a manager selects Add New Product, it should allow the manager to add a completely new product to the store.
+                    inquirer.prompt([{
+                        type: 'confirm',
+                        name: 'shop',
+                        message: "Is there anything else you would like to purchase?"
 
-
-
-
-
-
-
-// If you finished Challenge #2 and put in all the hours you were willing to spend on this activity, then rest easy! Otherwise continue to the next and final challenge.
-
-
-
-
-
-// Challenge #3: Supervisor View (Final Level)
-
-
-// Create a new MySQL table called departments. Your table should include the following columns:
-
-
-
-// department_id
-// department_name
-// over_head_costs (A dummy number you set for each department)
-
-
-
-// Modify the products table so that there's a product_sales column, and modify your bamazonCustomer.js app so that when a customer purchases anything from the store, the price of the product multiplied by the quantity purchased is added to the product's product_sales column.
-
-
-
-// Make sure your app still updates the inventory listed in the products column.
-
-
-
-// Create another Node app called bamazonSupervisor.js. Running this application will list a set of menu options:
-
-
-
-// View Product Sales by Department
-// Create New Department
-
-
-
-// When a supervisor selects View Product Sales by Department, the app should display a summarized table in their terminal/bash window. Use the table below as a guide.
+                    }]).then(function(answer){
+                        if(answer.shop){
+                            options();
+                    } else {
+                        console.log("Thank you for your business.")
+                        connection.end();
+                    }
+                  })
+                }
+              })
+            }
+          }
+        })
+      
+  });
+//      
+}
+options();
