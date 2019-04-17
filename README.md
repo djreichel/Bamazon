@@ -27,23 +27,19 @@ CLI app
 
 5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 
-*Screenshot of Bamazon Customer app with available products listed.*
+*Screenshot of Bamazon Customer app with available products listed -
+and the first message displayed.*
 
 ![Image of Bamazon Product list](assets/Bamazon_node_1.png)
 
 6. The app should then prompt users with two messages.
 * The first should ask them the ID of the product they would like to buy.
-
-*Screenshot of first message being displayed.*
-
-![Image of Bamazon Product list and first question listed](assets/Bamazon_node_2.png)
-
 * The second message should ask how many units of the product they would like to buy.
 
 *Screenshot of selected product, stock quantiy and price.
 And the second message being displayed.*
 
-![Image of Bamazon Product list and second question listed](assets/Bamazon_node_3.png)
+![Image of Bamazon Product list and first question listed](assets/Bamazon_node_2.png)
 
 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
 
